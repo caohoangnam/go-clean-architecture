@@ -1,0 +1,70 @@
+package config
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/spf13/viper"
+	"github.com/working/project/domain"
+)
+
+var db *gorm.DB
+var port string
+
+func init() {
+	viper.SetConfigFile(`config.json`)
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	if viper.GetBool(`debug`) {
+		log.Println("Service RUN on DEBUG mode")
+	}
+}
+
+func SetupModels() {
+
+	dbHost := viper.GetString(`database.host`)
+	dbPort := viper.GetInt(`database.port`)
+	dbUser := viper.GetString(`database.user`)
+	dbPass := viper.GetString(`database.pass`)
+	dbName := viper.GetString(`database.name`)
+
+	port := viper.GetString(`server.port`)
+
+	prosgret_conname := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		dbHost, dbPort, dbUser, dbPass, dbName)
+	db, err := gorm.Open("postgres", prosgret_conname)
+	if err != nil {
+		fmt.Println("Failed to connect to database!", err)
+	}
+
+	db.AutoMigrate(&domain.Book{})
+
+	// Initialize value
+	m := domain.Book{Author: "author2", Title: "title2"}
+
+	db.Create(&m)
+
+	SetUpDBConnection(db)
+	SetPortConnection(port)
+}
+
+func SetUpDBConnection(DB *gorm.DB) {
+	db = DB
+}
+
+func GetDBConnection() *gorm.DB {
+	return db
+}
+
+func SetPortConnection(Port string) {
+	port = Port
+}
+
+func GetPortConnection() string {
+	return port
+}
