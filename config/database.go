@@ -14,7 +14,7 @@ var db *gorm.DB
 var port string
 
 func init() {
-	viper.SetConfigFile(`config.json`)
+	viper.SetConfigFile(`.env`)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
@@ -26,13 +26,13 @@ func init() {
 
 func SetupModels() {
 
-	dbHost := viper.GetString(`database.host`)
-	dbPort := viper.GetInt(`database.port`)
-	dbUser := viper.GetString(`database.user`)
-	dbPass := viper.GetString(`database.pass`)
-	dbName := viper.GetString(`database.name`)
+	dbHost := viper.GetString(`DB_HOST`)
+	dbPort := viper.GetInt(`DB_PORT`)
+	dbUser := viper.GetString(`DB_USER`)
+	dbPass := viper.GetString(`DB_PASSWORD`)
+	dbName := viper.GetString(`DB_NAME`)
 
-	port := viper.GetString(`server.port`)
+	portServer := viper.GetString(`PORT_SERVER`)
 
 	prosgret_conname := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -50,7 +50,7 @@ func SetupModels() {
 	db.Create(&m)
 
 	SetUpDBConnection(db)
-	SetPortConnection(port)
+	SetPortConnection(portServer)
 }
 
 func SetUpDBConnection(DB *gorm.DB) {
