@@ -2,12 +2,11 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/working/project/config"
+	"github.com/working/go-clean-architecture/config"
 
-	_bookHttpDelivery "github.com/working/project/book/delivery/http"
-	_bookMiddleware "github.com/working/project/book/delivery/http/middleware"
-	_bookRepo "github.com/working/project/book/repository/psql"
-	_bookUcase "github.com/working/project/book/usecase"
+	_bookEntity "github.com/working/go-clean-architecture/app/entity/book"
+	_bookHandler "github.com/working/go-clean-architecture/app/handler/book"
+	_bookRepo "github.com/working/go-clean-architecture/app/repository/book"
 )
 
 func main() {
@@ -16,13 +15,11 @@ func main() {
 	db := config.GetDBConnection()
 	port := config.GetPortConnection()
 
-	r.Use(_bookMiddleware.Cors())
-
 	repo := _bookRepo.NewPsqlBookRepository(db)
-	us := _bookUcase.NewBookUsecase(repo)
+	entity := _bookEntity.NewBookEntity(repo)
 	api := r.Group("/v1")
 
-	_bookHttpDelivery.NewBooksHandler(api, us)
+	_bookHandler.NewBooksHandler(api, entity)
 
 	r.Run(port)
 }
