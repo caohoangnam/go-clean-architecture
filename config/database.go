@@ -7,7 +7,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
-	"github.com/working/project/domain"
 )
 
 var db *gorm.DB
@@ -38,16 +37,18 @@ func SetupModels() {
 		"password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPass, dbName)
 	db, err := gorm.Open("postgres", prosgret_conname)
+
 	if err != nil {
 		fmt.Println("Failed to connect to database!", err)
 	}
+	fmt.Println("Connect successfully to database!")
 
-	db.AutoMigrate(&domain.Book{})
+	// db.AutoMigrate(&domain.Book{})
 
 	// Initialize value
-	m := domain.Book{Author: "author2", Title: "title2"}
+	// m := domain.Book{Author: "author2", Title: "title2"}
 
-	db.Create(&m)
+	// db.Create(&m)
 
 	SetUpDBConnection(db)
 	SetPortConnection(portServer)
