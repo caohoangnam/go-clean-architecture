@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/working/go-clean-architecture/config"
 
-	_bookEntity "github.com/working/go-clean-architecture/app/entity"
-	_bookHandler "github.com/working/go-clean-architecture/app/handler"
-	_bookRepo "github.com/working/go-clean-architecture/app/repository"
+	_entity "github.com/working/go-clean-architecture/app/entity"
+	_handler "github.com/working/go-clean-architecture/app/handler"
+	_repo "github.com/working/go-clean-architecture/app/repository"
 )
 
 func main() {
@@ -15,11 +15,15 @@ func main() {
 	db := config.GetDBConnection()
 	port := config.GetPortConnection()
 
-	repo := _bookRepo.NewBookRepository(db)
-	entity := _bookEntity.NewBookEntity(repo)
+	repoBook := _repo.NewBookRepository(db)
+	entityBook := _entity.NewBookEntity(repoBook)
+
+	repoMeow := _repo.NewMeowRepository(db)
+	entityMeow := _entity.NewMeowEntity(repoMeow)
+
 	api := r.Group("/v1")
 
-	_bookHandler.NewBooksHandler(api, entity)
-
+	_handler.NewBooksHandler(api, entityBook)
+	_handler.NewMeowHandler(api, entityMeow)
 	r.Run(port)
 }
