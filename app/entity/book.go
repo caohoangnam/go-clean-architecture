@@ -1,4 +1,4 @@
-package usecase
+package entity
 
 import (
 	"context"
@@ -6,17 +6,17 @@ import (
 	"github.com/working/project/domain"
 )
 
-type bookUsecase struct {
+type BookEntity struct {
 	bookRepo domain.BookRepository
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of domain.ArticleUsecase interface
-func NewBookUsecase(a domain.BookRepository) domain.BookUsecase {
-	return &bookUsecase{
+func NewBookEntity(a domain.BookRepository) domain.BookUsecase {
+	return &bookEntity{
 		bookRepo: a,
 	}
 }
-func (a *bookUsecase) Fetch(c context.Context) (res []domain.Book, err error) {
+func (a *BookEntity) Fetch(c context.Context) (res []domain.Book, err error) {
 	res, err = a.bookRepo.Fetch(c)
 	if err != nil {
 		return nil, err
@@ -24,10 +24,7 @@ func (a *bookUsecase) Fetch(c context.Context) (res []domain.Book, err error) {
 	return
 }
 
-func (a *bookUsecase) GetByID(c context.Context, id string) (res domain.Book, err error) {
+func (a *BookEntity) GetByID(c context.Context, id string) (res domain.Book, err error) {
 	res, err = a.bookRepo.GetByID(c, id)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	return
 }
