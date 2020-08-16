@@ -5,7 +5,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/working/project/domain"
+	"github.com/working/go-clean-architecture/domain"
 )
 
 type BookRepository struct {

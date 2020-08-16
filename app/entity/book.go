@@ -3,7 +3,7 @@ package entity
 import (
 	"context"
 
-	"github.com/working/project/domain"
+	"github.com/working/go-clean-architecture/domain"
 )
 
 type BookEntity struct {
@@ -11,8 +11,8 @@ type BookEntity struct {
 }
 
 // NewArticleUsecase will create new an articleUsecase object representation of domain.ArticleUsecase interface
-func NewBookEntity(a domain.BookRepository) domain.BookUsecase {
-	return &bookEntity{
+func NewBookEntity(a domain.BookRepository) domain.BookEntity {
+	return &BookEntity{
 		bookRepo: a,
 	}
 }
