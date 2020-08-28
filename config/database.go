@@ -2,56 +2,42 @@ package config
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/spf13/viper"
+	"github.com/working/go-clean-architecture/domain"
 )
 
 var db *gorm.DB
 var port string
 
-func init() {
-	viper.SetConfigFile(`.env`)
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-
-	if viper.GetBool(`debug`) {
-		log.Println("Service RUN on DEBUG mode")
-	}
-}
-
 func SetupModels() {
 
-	dbHost := viper.GetString(`DB_HOST`)
-	dbPort := viper.GetInt(`DB_PORT`)
-	dbUser := viper.GetString(`DB_USER`)
-	dbPass := viper.GetString(`DB_PASSWORD`)
-	dbName := viper.GetString(`DB_NAME`)
+	connectionParams := "user=docker password=docker sslmode=disable host=db"
+	db, err := gorm.Open("postgres", connectionParams)
+	if err != nil {
+		return
+	}
 
-	portServer := viper.GetString(`PORT_SERVER`)
-
-	prosgret_conname := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPass, dbName)
-	db, err := gorm.Open("postgres", prosgret_conname)
+	// create table if it does not exist
+	if !db.HasTable(&domain.Book{}) {
+		db.CreateTable(&domain.Book{})
+	}
 
 	if err != nil {
 		fmt.Println("Failed to connect to database!", err)
 	}
 	fmt.Println("Connect successfully to database!")
 
-	// db.AutoMigrate(&domain.Book{})
+	db.AutoMigrate(&domain.Book{})
 
 	// Initialize value
-	// m := domain.Book{Author: "author2", Title: "title2"}
+	m := domain.Book{Author: "caonam", Title: "hoangnam"}
 
-	// db.Create(&m)
+	db.Create(&m)
 
 	SetUpDBConnection(db)
-	SetPortConnection(portServer)
+	SetPortConnection(":8080")
 }
 
 func SetUpDBConnection(DB *gorm.DB) {

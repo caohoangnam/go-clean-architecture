@@ -6,7 +6,7 @@ import (
 	"github.com/working/go-clean-architecture/domain"
 )
 
-type MeowReposiory interface {
+type MeowRepository interface {
 	Close()
 	Create(ctx context.Context, meow domain.Meow) error
 	List(ctx context.Context, skip, take int64) ([]domain.Meow, error)

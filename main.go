@@ -11,6 +11,7 @@ import (
 
 func main() {
 	r := gin.Default()
+	
 	config.SetupModels() // new
 	db := config.GetDBConnection()
 	port := config.GetPortConnection()
