@@ -3,6 +3,7 @@ package events
 import (
 	"bytes"
 	"encoding/gob"
+	"log"
 
 	"github.com/nats-io/nats.go"
 	"github.com/working/go-clean-architecture/domain"
@@ -14,8 +15,8 @@ type NatsEventStore struct {
 	meowCreatedChan         chan MeowCreatedMessage
 }
 
-func NewNats(url string) (*NatsEventStore, error) {
-	nc, err := nats.Connect(url)
+func NewNats(natsURL string) (*NatsEventStore, error) {
+	nc, err := nats.Connect(natsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +29,9 @@ func (e *NatsEventStore) Close() {
 		e.nc.Close()
 	}
 	if e.meowCreatedSubscription != nil {
-		e.meowCreatedSubscription.Unsubscribe()
+		if err := e.meowCreatedSubscription.Unsubscribe(); err != nil {
+			log.Fatal(err)
+		}
 	}
 	close(e.meowCreatedChan)
 }
@@ -61,7 +64,9 @@ func (e *NatsEventStore) PublishMeowCreated(meow domain.Meow) error {
 func (e *NatsEventStore) OnMeowCreated(f func(MeowCreatedMessage)) (err error) {
 	m := MeowCreatedMessage{}
 	e.meowCreatedSubscription, err = e.nc.Subscribe(m.Key(), func(msg *nats.Msg) {
-		e.readMessage(msg.Data, &m)
+		if err := e.readMessage(msg.Data, &m); err != nil {
+			log.Fatal(err)
+		}
 		f(m)
 	})
 	return
@@ -84,7 +89,9 @@ func (e *NatsEventStore) SubscribeMeowCreated() (<-chan MeowCreatedMessage, erro
 		for {
 			select {
 			case msg := <-ch:
-				e.readMessage(msg.Data, &m)
+				if err := e.readMessage(msg.Data, &m); err != nil {
+					log.Fatal(err)
+				}
 				e.meowCreatedChan <- m
 			}
 		}

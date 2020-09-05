@@ -9,7 +9,7 @@ type Message interface {
 }
 
 type MeowCreatedMessage struct {
-	ID        string
+	Id        string
 	Body      string
 	CreatedAt time.Time
 }

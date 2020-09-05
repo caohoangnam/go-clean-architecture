@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jinzhu/gorm"
 
@@ -22,7 +21,6 @@ func (m MeowRepository) Close() {
 }
 
 func (m MeowRepository) Create(ctx context.Context, meow domain.Meow) error {
-	fmt.Println("meow", meow)
 	err := m.Conn.Create(&meow).Error
 	return err
 }
