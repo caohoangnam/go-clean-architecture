@@ -48,5 +48,13 @@ services:
     restart: "always"
     ports:
       - "4200"
+  services:
+    build: .
+    volumes:
+      - ./api:/go/src/github.com/working/go-working-architecture/services
+    links:
+      - nats
+    ports:
+      - "4400"
   # redis:
   #   image: "redis:alpine"    

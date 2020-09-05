@@ -20,6 +20,7 @@ func NewMeowHandler(r *gin.RouterGroup, dme domain.MeowEntity) {
 	}
 	r.GET("/meows", handler.List)
 	r.POST("/meows", handler.Create)
+	r.GET("/search", handler.SearchMeows)
 }
 
 func (m *MeowHandle) Create(c *gin.Context) {
@@ -34,8 +35,6 @@ func (m *MeowHandle) Create(c *gin.Context) {
 		return
 	}
 
-	//	utils.ResponseSuccess()
-
 	// Publish event
 	err = events.PublishMeowCreated(meow)
 	if err != nil {
@@ -47,9 +46,21 @@ func (m *MeowHandle) Create(c *gin.Context) {
 }
 
 func (m *MeowHandle) List(c *gin.Context) {
-	skip, _ := strconv.ParseInt(c.Param("skip"), 10, 64)
-	take, _ := strconv.ParseInt(c.Param("take"), 10, 64)
-	fmt.Println("skip", skip, "---take", take)
+	skip, _ := strconv.ParseInt(c.Query("skip"), 10, 64)
+	take, _ := strconv.ParseInt(c.Query("take"), 10, 64)
 	meows, _ := m.MeowEntity.List(c.Request.Context(), skip, take)
+	c.JSON(200, gin.H{"data": meows})
+}
+
+func (m *MeowHandle) SearchMeows(c *gin.Context) {
+	query := c.Query("query")
+	skip, _ := strconv.ParseInt(c.Query("skip"), 10, 64)
+	take, _ := strconv.ParseInt(c.Query("take"), 10, 64)
+	//Search Meows
+	meows, err := m.MeowEntity.SearchMeows(c, query, skip, take)
+	if err != nil {
+		fmt.Println("Can't search")
+		return
+	}
 	c.JSON(200, gin.H{"data": meows})
 }

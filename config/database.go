@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -13,6 +14,7 @@ import (
 	"github.com/working/go-clean-architecture/domain"
 	"github.com/working/go-clean-architecture/events"
 	"github.com/working/go-clean-architecture/search"
+	service "github.com/working/go-clean-architecture/services"
 )
 
 var db *gorm.DB
@@ -71,6 +73,30 @@ func SetupModels() {
 	// defer elastic.Close()
 
 	//	// Initialize Nats
+
+	//	hub := service.newHub()
+	//	retry.ForeverSleep(2*time.Second, func(_ int) error {
+	//		nats, err := events.NewNats(natsURL)
+	//		if err != nil {
+	//			fmt.Println("Failed to connect to nats", err)
+	//			return nil
+	//		}
+	//		if nats == nil {
+	//			fmt.Println("Failed to connect Nats with pointer")
+	//			return nil
+	//		}
+	//		err = nats.OnMeowCreated(func(m events.MeowCreatedMessage) {
+	//			log.Printf("Meow received: %v\n", m)
+	//			hub.broadcast(newMeowCreatedMessage(m.Id, m.Body, m.CreatedAt), nil)
+	//		})
+	//		fmt.Println("Connect successfully to Nats!")
+	//		events.SetEventStore(nats)
+	//		return nil
+	//	})
+	//	//	// defer events.Close()
+	//
+
+	hub := service.NewHub()
 	retry.ForeverSleep(2*time.Second, func(_ int) error {
 		nats, err := events.NewNats(natsURL)
 		if err != nil {
@@ -81,17 +107,29 @@ func SetupModels() {
 			fmt.Println("Failed to connect Nats with pointer")
 			return nil
 		}
-		err = nats.OnMeowCreated(onMeowCreated)
+
+		// Push messages to clients
+		err = nats.OnMeowCreated(func(m events.MeowCreatedMessage) {
+			log.Printf("Meow received: %v\n", m)
+			hub.Broadcast(service.NewMeowCreatedMessage(m.Id, m.Body, m.CreatedAt), nil)
+		})
 		if err != nil {
-			log.Println(err)
+			fmt.Println(err)
 			return nil
 		}
-		fmt.Println("Connect successfully to Nats!")
+
 		events.SetEventStore(nats)
 		return nil
 	})
-	//	// defer events.Close()
-	//
+	//	defer events.Close()
+
+	// Run WebSocket server
+	go hub.Run()
+	http.HandleFunc("/pusher", hub.HandleWebSocket)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func SetUpDBConnection(DB *gorm.DB) {

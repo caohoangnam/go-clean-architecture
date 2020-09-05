@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/working/go-clean-architecture/domain"
+	"github.com/working/go-clean-architecture/search"
 )
 
 type MeowRepository struct {
@@ -42,4 +43,9 @@ func (m MeowRepository) List(ctx context.Context, skip, take int64) ([]domain.Me
 		return nil, err
 	}
 	return meows, nil
+}
+
+func (m MeowRepository) SearchMeows(ctx context.Context, s string, skip, take int64) ([]domain.Meow, error) {
+	meows, err := search.Search(ctx, s, skip, take)
+	return meows, err
 }

@@ -31,3 +31,8 @@ func (m *MeowEntity) List(c context.Context, skip, take int64) ([]domain.Meow, e
 	}
 	return meows, nil
 }
+
+func (m *MeowEntity) SearchMeows(c context.Context, search string, skip, take int64) ([]domain.Meow, error) {
+	meows, err := m.meowRepo.SearchMeows(c, search, skip, take)
+	return meows, err
+}
