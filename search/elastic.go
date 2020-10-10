@@ -3,9 +3,10 @@ package search
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 	"github.com/working/go-clean-architecture/domain"
 )
 
@@ -48,16 +49,17 @@ func (e *ElasticRepository) Search(ctx context.Context, query string, skip int64
 				PrefixLength(1).
 				CutoffFrequency(0.0001),
 		).
-		From(int(skip)).
-		Size(int(take)).
+		//		From(int(skip)).
+		//		Size(int(take)).
 		Do(ctx)
+	fmt.Println("err", err)
 	if err != nil {
 		return nil, err
 	}
 	meows := []domain.Meow{}
 	for _, hit := range result.Hits.Hits {
 		var meow domain.Meow
-		if err = json.Unmarshal(*hit.Source, &meow); err != nil {
+		if err = json.Unmarshal(hit.Source, &meow); err != nil {
 			log.Println(err)
 		}
 		meows = append(meows, meow)

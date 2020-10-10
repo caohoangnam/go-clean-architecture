@@ -7,7 +7,11 @@ ENV APP_ENV $app_env
 COPY . /go-clean-architecture
 WORKDIR /go-clean-architecture
 
-RUN go get -u github.com/olivere/elastic
+COPY ./search/custom_elasticsearch.yml /usr/share/elasticsearch/config
+COPY ./kibana/custom_kibana.yml /usr/share/kibana/config
+COPY ./logstash/custom_logstash.yml /usr/share/logstash/config
+
+RUN go get -u github.com/olivere/elastic/v7
 RUN go get -u github.com/nats-io/nats.go
 RUN go get -u github.com/tinrab/retry
 RUN go get -u github.com/gorilla/websocket

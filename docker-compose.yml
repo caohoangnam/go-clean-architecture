@@ -1,60 +1,109 @@
-version: '2'
+version: "3.3"
 services:
-  db:
-    build: ./db
-    volumes:
-      - ./db/pgdata:/pgdata
-    ports:
-      - "5432"
-    environment:
-      - POSTGRES_USER=docker
-      - POSTGRES_PASSWORD=docker
-      - PGDATA=/pgdata
-
-  api:
-    build: .
-    volumes:
-      - ./api:/go/src/github.com/working/go-working-architecture
-    ports:
-      - "5000:8080"
-    links:
-      - db
-      - elasticsearch
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_container
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "5050:80"
-    restart: unless-stopped
-
-  elasticsearch:
-    build: ./search
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ports:
-      - "9200"
-  nats:
-    build: ./events
-    restart: "always"
-    ports:
-      - "4200"
-  services:
-    build: .
-    volumes:
-      - ./api:/go/src/github.com/working/go-working-architecture/services
-    links:
-      - nats
-    ports:
-      - "4400"
-  # redis:
-  #   image: "redis:alpine"    
+    db:
+        build: ./db
+        volumes:
+          - ./db/pgdata:/pgdata
+        ports:
+          - 5432:5432
+        environment:
+          - POSTGRES_USER=docker
+          - POSTGRES_PASSWORD=docker
+          - PGDATA=/pgdata
+        networks:
+          - elknetwork
+    api:
+        build: .
+        volumes:
+          - ./api:/go/src/github.com/working/go-working-architecture
+        ports:
+          - 5000:8080
+        links:
+          - db
+          - elasticsearch
+        networks:
+          - elknetwork
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: pgadmin_container
+        environment:
+          PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+          PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+        ports:
+          - 5050:80
+        restart: unless-stopped
+        networks:
+          - elknetwork
+    nats:
+        build: ./events
+        restart: "always"
+        ports:
+          - 4200:4200
+        networks:
+          - elknetwork    
+    services:
+        build: .
+        volumes:
+          - ./api:/go/src/github.com/working/go-working-architecture/services
+        links:
+          - nats
+        ports:
+          - 4400:4400
+        networks:
+          - elknetwork    
+    elasticsearch:
+        image: elasticsearch:7.7.0
+        container_name: elasticsearch
+        hostname: elasticsearch
+        environment:
+            - "discovery.type=single-node"
+        ports:
+            - 9200:9200
+            - 9300:9300
+        networks:
+            - elknetwork
+    kibana:
+        image: kibana:7.7.0
+        container_name: kibana
+        hostname: kibana
+        ports:
+            - 5601:5601
+        links:
+            - elasticsearch
+        depends_on:
+          - elasticsearch
+        networks:
+          - elknetwork
+    logstash:
+        image: docker.elastic.co/logstash/logstash:7.7.0
+        ports:
+          - 9600:9600
+        environment:
+          LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+        networks:
+          - elknetwork
+        depends_on:
+          - elasticsearch
+    metricbeat:
+        image: docker.elastic.co/beats/metricbeat:7.7.0
+        container_name: metricbeat-metricbeat-services
+        command: '-e'
+        environment:
+          - "WAIT_FOR_HOSTS=elasticsearch:9200 kibana:5601"
+          - "HOST_ELASTICSEARCH=elasticsearch:9200"
+          - "HOST_KIBANA=kibana:5601"
+        depends_on:
+          - elasticsearch     
+        networks:
+          - elknetwork    
+            #    client:
+            #        image: nginx
+            #        ports:
+            #           - 8000:80
+            #        volumes:
+            #           - ./src:/usr/share/nginx/html
+            #        networks:
+            #           - elknetwork     
+networks:
+    elknetwork:
+        driver: bridge

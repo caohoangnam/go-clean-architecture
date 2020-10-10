@@ -1,3 +1,3 @@
-FROM nats-streaming:0.9.2
+FROM nats-streaming:0.18.0
 
 EXPOSE 4222

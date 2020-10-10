@@ -59,7 +59,7 @@ func (m *MeowHandle) SearchMeows(c *gin.Context) {
 	//Search Meows
 	meows, err := m.MeowEntity.SearchMeows(c, query, skip, take)
 	if err != nil {
-		fmt.Println("Can't search")
+		fmt.Println("Can't search", err)
 		return
 	}
 	c.JSON(200, gin.H{"data": meows})

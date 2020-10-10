@@ -59,17 +59,20 @@ func SetupModels() {
 	// defer db.Close()
 
 	// Initialize Elastics
-	elastic, err := search.NewElastic(esURL)
-	if err != nil {
-		fmt.Println("Failed to connect Elastics")
-		return
-	}
-	if elastic == nil {
-		fmt.Println("Failed to connect Elastics with pointer")
-		return
-	}
-	fmt.Println("Connect successfully to Elastics!")
-	search.SetRepository(elastic)
+	retry.ForeverSleep(2*time.Second, func(_ int) error {
+		elastic, err := search.NewElastic(esURL)
+		if err != nil {
+			fmt.Println("Failed to connect Elastics")
+			return nil
+		}
+		if elastic == nil {
+			fmt.Println("Failed to connect Elastics with pointer")
+			return nil
+		}
+		fmt.Println("Connect successfully to Elastics!")
+		search.SetRepository(elastic)
+		return nil
+	})
 	// defer elastic.Close()
 
 	//	// Initialize Nats
@@ -109,6 +112,11 @@ func SetupModels() {
 		}
 
 		// Push messages to clients
+		err = nats.OnMeowCreated(onMeowCreated)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 		err = nats.OnMeowCreated(func(m events.MeowCreatedMessage) {
 			log.Printf("Meow received: %v\n", m)
 			hub.Broadcast(service.NewMeowCreatedMessage(m.Id, m.Body, m.CreatedAt), nil)
