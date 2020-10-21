@@ -96,14 +96,6 @@ services:
           - elasticsearch     
         networks:
           - elknetwork    
-            #    client:
-            #        image: nginx
-            #        ports:
-            #           - 8000:80
-            #        volumes:
-            #           - ./src:/usr/share/nginx/html
-            #        networks:
-            #           - elknetwork     
 networks:
     elknetwork:
         driver: bridge

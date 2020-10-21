@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/working/go-clean-architecture/config"
 
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	
+	r.Use(cors.Default())
 	config.SetupModels() // new
 	db := config.GetDBConnection()
 	port := config.GetPortConnection()
