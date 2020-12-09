@@ -9,6 +9,9 @@ before_install:
 
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic
+  
+env:
+  - CODECOV_TOKEN="db9c7b2d-6bb2-42e4-933c-867c8a71d7e2"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
