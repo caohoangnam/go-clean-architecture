@@ -7,3 +7,4 @@ docker:
 docker-build:
 	docker-compose up --build
 	
+.PHONY: run docker docker-build
